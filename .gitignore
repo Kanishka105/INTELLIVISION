@@ -1,0 +1,43 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model weights
+*.pt
+*.onnx
+*.engine
+
+# Datasets
+dataset/
+data/
+
+# Large videos
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Generated results
+outputs/*/results/
+outputs/final_pipeline/
+
+# Training runs
+runs/
+wandb/
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Generated image outputs
+outputs/layer2/sharpening/*.jpg

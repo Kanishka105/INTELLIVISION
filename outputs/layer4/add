@@ -1,0 +1,33 @@
+1. Inverse DFT
+Image
+ ↓
+DFT
+ ↓
+Frequency representation
+ ↓
+Inverse DFT
+ ↓
+Reconstructed image
+2.  Inverse DCT
+Image
+ ↓
+DCT
+ ↓
+DCT coefficients
+ ↓
+Keep important coefficients
+ ↓
+Inverse DCT
+ ↓
+Reconstructed image
+3. Lower Ratio Test
+KNN matching
+      ↓
+Ratio test
+      ↓
+Good matches
+4. Feature Robutness
+Original
+Rotated
+Scaled
+Brightness changed

@@ -1,0 +1,83 @@
+Why we need a binary image?
+Objective: Find object and ignore background. To find the part of the pixel
+We use Binary Mask vs Binary Image
+a. Binary Image: contain two value 0 and 1 
+b. To understand the object we need threshold:
+-- Threshold create rule to separate pixels according to some property using Intensity so that an image convert to different regions. Object -- Bright and Background -- 0
+Thus Threshold help to create Binary Mask and then we can find the number of object using relationship property.
+Help In:
+object extraction
+contour detection
+connected-component analysis
+morphology
+area calculation
+shape analysis
+Inverse Thresholding means the background is 1 and object is 0
+Thresholding methods:
+a. global: 1 threshold for entire range
+b. Ostu: Automatically finds threshold from histogram or intesity distribution. Threshold separates two intensity groups effectively.
+c. Adaptive: Let's calculate the threshold locally for different neighborhoods.
+
+Thresholding : separate pixels on basis of intesnity
+Segmenation: image divide meaningful regions
+
+Morphology: after thresholding, there may be tiny unwanted dots, holes, broken boundaries and small gaps. so we need the clean mask. 
+Process image based on the shape and structure of regions
+Morphology is used to clean, repair, connect, or separate shapes in a binary image.
+It deals with the shape of the object 
+4 main operations:
+a. Erosion: shrink object
+b. dilation: expand object
+c. Opening: E--D means to remove noise
+d. Closing: D--E means fill gaps and holes
+
+Contour: Object Boundaries
+Shape Analaysis: Shape analyse krna
+
+Contour: Means Boundary of the Object:
+Connected Component Analysis: Which pixel belong to the same object/region. So we calculate: Perimeter/Area/ Bounding Reactangle: We can put a rectangle around the object/ Centroid: appr center of the object[Useful for tracking]
+Aspect Ratio: Width/Height: Use when search for rectabgular regions such as license plate candidates.
+Extent: tells us how much of the bounding box is occupied by the actaul object. extent=contour area/bounding reactangle area
+Solidity: Solidity compares the object's area with its convex hull area. solidity=contour area/convex hull area
+It tells us how solid/compact an object is compared with the smallest convex shape that can completely cover it.
+example: object area = 800 and convex hull area = 1000 then solidity = 0.8 so 80% of the area enclosed by its convex hull.
+why need? as different objects can have different shapes. so these numbers give you info about their shape. it is one shape feature so do not use this alone to identify object
+Roundness/Circularity: 4pieA/p*p. Perfect value close to 1. Lower than 1 more irregular.
+Image Moments: describe how pixels are distributed in a region.Higher-order moments can also describe the distribution of the shape.
+Hu Moments:relatively invariant to transformation such as translation/scaling/rotation.
+Hu Moments provide a compact numerical signature of a shape that can be useful for shape comparison
+
+contour hierarchy: outer contour and inner contour. if an object contain another boundary inside it. Get two variable: contours- contains the actual contour points and hierarchy contains the relationship between those contours.It has 4 hierarchy values: Next, Previous, First_child, Parent.
+example: Contour 0--Outer Boundary of A
+contour 1-- Hole inside A
+contour 2-- Outer Boundary of B
+RETR_EXTERNAL: retrieves only outermost contours
+RETR_TREE: retrieves the complete hiearchy
+
+Connected Components:foreground pixels are connected and belong to the same region. It assigns a unique label to each connected region. Area/ Centroid/ Bounding Box/ Width and Height and Labels
+
+After segmenation-: convert segmented object to measurable info about its geometry and structure.
+
+Shape representation is the way we choose to mathematically represent the shape of an object so that a computer can process and analyze it.
+Shape Rep based on Boundary based and Region Based.
+"How do I represent the shape?"
+
+Shape Descriptors: A shape descriptor is a measurable numerical property used to describe the geometry, size, position, or structure of an object.
+"What numerical properties describe that representation?"
+After all the details of the object region and boundary based got the feature vector.Feature Vector = a collection of numerical features describing one object.
+
+Can do:
+Vehicle Region Detection
+License Plate Candidate Localization
+Remove Noise/Small Object
+Object Counting
+Shape Based Object Filtering
+Shape Classification
+
+
+
+
+
+
+
+

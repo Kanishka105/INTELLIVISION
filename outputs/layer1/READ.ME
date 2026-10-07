@@ -1,0 +1,105 @@
+                    LAYER 1
+                       │
+                       ▼
+              IMAGE ACQUISITION
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+       Load Image    Dataset     Video Frame
+          │
+          ▼
+    IMAGE REPRESENTATION
+          │
+    ┌─────┼─────┬──────────┐
+    ▼     ▼     ▼          ▼
+  Pixels Channels Color   Resolution
+                Space
+    │     │      │          │
+    ▼     ▼      ▼          ▼
+  Matrix RGB   BGR/RGB     Width
+  Values Gray  HSV         Height
+  0-255   RGBA              FPS*
+    │
+    ▼
+  IMAGE ANALYSIS
+    │
+    ├── Shape
+    ├── Dimensions
+    ├── Data type
+    ├── Channels
+    ├── Min/Max pixel
+    └── Resolution
+    │
+    ▼
+  BASIC TRANSFORMATIONS
+    │
+    ├── RGB → Gray
+    ├── RGB → HSV
+    ├── Resize
+    ├── Crop / ROI
+    └── Save output
+    │
+    ▼
+  VISUALIZATION
+    │
+    ├── Original
+    ├── Grayscale
+    ├── HSV
+    └── Resized
+    │
+    ▼
+  OUTPUT → Layer 2
+### Sampling: Determines where we measure the image.
+### Quantization: Determines what numerical value we assign to the measurement.
+Therefore:Digital image = spatial sampling + numerical quantization
+# 9. WHY DO CHANNELS MATTER?
+Channels determine what information is available.
+# 10. COLOR SPACES
+A color space is a way of representing colors numerically.Mainly useful for displaying/representing color.
+# 12. DATA TYPE
+Pixels are numbers, but the data type determines how those numbers are stored and processed.
+uint8/int16/float32/float64
+Useful for mathematical processing and ML.
+# 13. NORMALIZATION
+An image with:0 – 255 can be converted to:0 – 1.Normalization makes numerical processing easier and is commonly used before ML/deep-learning models.Changing data type does not necessarily change the visual meaning.It changes **how the numerical values are represented and processed**.
+#MIN AND MAX
+Image A:min = 0.max = 255
+→ wide intensity range
+Image B:min = 100.max = 150
+→ narrow intensity range
+#RESOLUTION: Resolution describes the spatial dimensions/detail capability of an image or imaging system.
+Example:1920 × 1080 means:
+Width  = 1920 pixels.Height = 1080 pixels.Total pixels:1920 × 1080 = 2,073,600 pixels
+HIGHER RESOLUTION: MORE MEMORY MORE COMPUTATION MORE DETAIL MORE SPATIAL SAMPLES
+LOWER RESOLUTION: FEWER DETAIL FEWER COMPUTATION FEWER MEMORY FASTER PROCESSING.
+#VIDEO AND FRAMES
+A video is a sequence of frames:30 FPS=approximately 30 frames/second
+Comparing consecutive frames can help detect movement.
+Frame 1:Car at position A. Frame 2:Car at position B
+Calculate: Difference = |Frame2 - Frame1|.Changed regions can indicate motion.
+#DATASET AND DATALOADER
+### Dataset: A collection of samples:
+### DataLoader: Helps efficiently provide data to a model.
+It can:Load data/ Batch data/ Shuffle data/ Preprocess/transform data
+#RESIZE vs COMPRESSION
+| Operation            | What happens?                                  |
+| -------------------- | ---------------------------------------------- |
+| Resize               | Number of pixels/dimensions changes            |
+| Lossless compression | File size decreases without losing information |
+| Lossy compression    | File size decreases by discarding information  |
+#DIGITAL IMAGE PROCESSING vs COMPUTER VISION
+## Digital Image Processing (DIP).How can I modify or improve the image?
+Examples: Noise removal/ Filtering/ Sharpening/ Contrast enhancement/ Histogram equalization/ Image restoration/ Thresholding/ Resizing
+## Computer Vision (CV): What information can I understand or extract from the image?
+Examples: Object detection/  Object recognition/ Face recognition/ Object tracking/ Vehicle counting/ ANPR/ Scene understanding
+### Easy difference
+DIP → Process the image
+CV → Understand/extract information from the image
+DIP can be used as a preprocessing stage in a CV pipeline.
+
+
+
+CHECK points
+1. DIFFERENT CHARACTERISTIC OF THE IMAGE like resolution.
+2. DIFFERENT CHANNELS/RESOLUTIONS/DATATYPE/IMAGE READABILITY
+3. DIFFERENCE BETWEEN RESIZE AND RESOLUTION

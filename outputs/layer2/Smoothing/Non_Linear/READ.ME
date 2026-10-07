@@ -1,0 +1,56 @@
+Kernel = what local pattern am I looking for?
+
+For example:
+
+-1   0   +1
+-2   0   +2
+-1   0   +1
+
+This kernel compares left-side pixels with right-side pixels.
+
+So it is looking for a change in intensity across the neighborhood:
+
+Dark → Dark → Bright
+
+That indicates a vertical edge.
+
+What does the asymmetric kernel do?
+
+An asymmetric kernel gives different importance/direction to different sides.
+
+For example:
+
+-1   0   +1
+
+means roughly:
+
+compare the intensity on the left with the intensity on the right.
+
+So you're finding a directional relationship between neighboring pixels.
+
+It can tell you things like:
+
+left → right intensity change
+right → left intensity change
+top → bottom intensity change
+bottom → top intensity change
+
+This is why asymmetric kernels are especially useful for directional edge/gradient detection.
+
+And where does convolution enter?
+
+With correlation:
+
+kernel
+  ↓
+apply directly
+
+With convolution:
+
+kernel
+  ↓
+flip 180°
+  ↓
+apply
+
+So the asymmetry is important because flipping changes the direction/sign of the response.

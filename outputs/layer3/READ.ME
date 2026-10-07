@@ -1,0 +1,108 @@
+Separate objects/regions from the background
+Traffic image
+      ↓
+Find road region
+Find vehicle regions
+Find lane regions
+Find license-plate region
+      ↓
+Create separate masks/regions
+      ↓
+Analyze their shapes
+
+
+PIPELINE:
+                  LAYER 3
+                     │
+                     ↓
+              Input image
+                     │
+                     ↓
+              Preprocessed image
+             (from Layer 2)
+                     │
+                     ↓
+              THRESHOLDING
+                     │
+                     ↓
+             Binary image / MASK[Background is 0 and Object has pixel>0. Connected Regions formed by pixel]
+                     │
+                     ↓
+             MORPHOLOGICAL
+              OPERATIONS
+                     │
+          ┌──────────┴──────────┐
+          ↓                     ↓
+       Erosion               Dilation
+          ↓                     ↓
+      Opening               Closing
+          └──────────┬──────────┘
+                     ↓
+               Cleaned mask
+                     │
+             ┌───────┴────────┐
+             ↓                ↓
+         CONTOURS       CONNECTED COMPONENTS
+             ↓                ↓
+       Object boundaries   Object regions
+             │                │
+             └───────┬────────┘
+                     ↓
+             SHAPE ANALYSIS
+                     │
+                  REPRESENTATION
+                        │
+                  ┌──────┴──────┐
+                  ↓             ↓
+            Region-based   Boundary-based
+                  ↓             ↓
+            Mask/Region     Contour
+                  │             │
+                  └──────┬──────┘
+                        ↓
+                  DESCRIPTORS
+                        │
+            ┌─────────┼───────────────┐
+            ↓         ↓               ↓
+            Size      Position       Shape
+            │         │               │
+            Area      Centroid      Aspect Ratio
+            Width     Location       Solidity
+            Height                   Extent
+                                    Circularity
+                                    Perimeter
+                        │
+                        ↓
+                  FEATURE VECTOR
+                        │
+                        ↓
+            Object characterization
+
+
+            FILE structure01 THRESHOLDING
+       ↓
+"Separate foreground from background"
+       ↓
+02 MORPHOLOGY
+       ↓
+"Clean and repair the mask"
+       ↓
+03 CONNECTED COMPONENTS
+       ↓
+"Which pixels belong to which object?"
+       ↓
+04 CONTOURS
+       ↓
+"Where is the object's boundary?"
+       ↓
+05 SHAPE ANALYSIS
+       ↓
+"How does the object look geometrically?"
+       ↓
+06 HOUGH
+       ↓
+"Detect specific geometric structures"
+       ↓
+07 APPLICATIONS
+       ↓
+"Use everything for INTELLIVISION"

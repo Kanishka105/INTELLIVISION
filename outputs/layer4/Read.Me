@@ -1,0 +1,214 @@
+fEATURE: measurable characteristic of an image or object
+Shape feature: Area/Width/Height/AspectRatio/Circularity/Solidity
+Color Features: Mean Color/ RGB values/HSV values/ Color Histogram
+Texture Features: Smoothness/ Contrast/ Entropy/ Local Patterns
+Edge Features: Number of edges/ Edge Density/ Gradient Information
+
+LAYER 3: WHERE IS THE OBJECT ? WHAT IS ITS GEOMETRIC SHAPE
+LAYER 4: WHAT CHARACTERISTICS DOES THE OBJECT HAVE?
+
+THREE CATEGORIZE INTO: 
+a. COLOR:
+b. TEXTURE:Both have similar color--their texture is different.How pixel intensities/colors are spatially arranged or how a surface visually varies.
+BASIC TEXTURE FEATURES:
+1. MEAN/VARIANCE/STANDARD DEVIATION/ENTROPY
+2.Gray-Level Co-occurrence Matrix (GLCM).Instead of looking at pixels individually, look at how often pairs of intensity values occur next to each other.
+q. why is gradeint important AnalyticsSo the gradient can tell us about:
+
+LOCAL FEATURES:
+a.SIFT and ORB: Keypoints Mark krte hai
+1. SIFT: SIFT = Scale-Invariant Feature Transform.SIFT finds important keypoints and creates a numerical descriptor for each keypoint.The descriptor captures the local appearance around the keypoint.
+SIFT is designed to be relatively robust to:
+scale changes
+rotation
+moderate illumination changes
+
+2.ORB = Oriented FAST and Rotated BRIEF
+It provides:
+keypoint detection
+orientation information
+binary descriptors
+ORB is generally computationally lighter than SIFT and is very useful for real-time applications
+
+HOG = Histogram of Oriented Gradients
+It describes an object using the directions of its local gradients.
+
+Layer 3
+
+Feature vector mainly contains geometric/shape information:
+
+$$ X_{shape}= [A,P,W,H,AR,Solidity,Circularity] $$
+Layer 4
+
+Feature vector can contain multiple visual characteristics:
+
+$$ X= [ Shape, Color, Texture, Gradient, LocalFeatures ] $$
+
+So Layer 4 creates a richer representation.
+c. EDGE/GRADIENT:
+                    IMAGE
+                      ↓
+                 LAYER 2
+             Improve the image
+                      ↓
+                 LAYER 3
+
+             Find the objects
+                      ↓
+       ┌──────────────┴──────────────┐
+       ↓                             ↓
+    Mask/Region                    Shape
+       ↓                             ↓
+ Connected Components            Contours
+       └──────────────┬──────────────┘
+                      ↓
+               Shape Analysis
+                      ↓
+                 LAYER 4
+              Feature Extraction
+                      ↓
+       ┌──────────────┼──────────────┐
+       ↓              ↓              ↓
+     Color          Texture       Gradient
+       │              │              │
+       └──────────────┼──────────────┘
+                      ↓
+               SIFT / ORB / HOG
+                      ↓
+                Feature Vector
+                      ↓
+                 LAYER 5
+          Detection / Recognition
+                      ↓
+             "What is this?"
+                      ↓
+                  Car/Bike/
+                  Truck/etc.
+                      ↓
+                 LAYER 6
+              Tracking / Video
+                      ↓
+              "Where did it go?"
+
+
+
+
+
+
+
+
+                                       LAYER 4
+                    FEATURE EXTRACTION
+                            │
+        ┌───────────────────┼───────────────────┐
+        ↓                   ↓                   ↓
+      COLOR              TEXTURE            GRADIENT
+        │                   │                   │
+     RGB/HSV              Mean               Sobel
+        │                Variance                │
+ Color Histogram         Entropy           Gradient
+                            │                Magnitude
+                           GLCM                │
+                                               HOG
+        └───────────────────┼───────────────────┘
+                            ↓
+                    LOCAL FEATURES
+                            │
+                       ┌────┴────┐
+                       ↓         ↓
+                      SIFT      ORB
+                       │         │
+                       └────┬────┘
+                            ↓
+                      DESCRIPTORS
+                            ↓
+                     FEATURE VECTOR
+                            ↓
+                    FEATURE FUSION
+                            ↓
+                    MACHINE LEARNING
+                            ↓
+             ┌──────────────┼──────────────┐
+             ↓              ↓              ↓
+           KNN             SVM        Random Forest
+             │              │              │
+             └──────────────┼──────────────┘
+                            ↓
+                     CLASSIFICATION
+                            ↓
+                  INTELLIVISION
+
+Feature Fusion: feature fusion comes after you have extracted multiple feature sets
+IMAGE
+  ↓
+Layer 3: Object/Region Extraction
+  ↓
+ ┌──────────────┬──────────────┬──────────────┐
+ ↓              ↓              ↓
+Shape          Color          Texture
+Features       Features       Features
+ ↓              ↓              ↓
+Shape          Color          Texture
+Vector         Vector         Vector
+ └──────────────┬──────────────┘
+                ↓
+         FEATURE FUSION
+                ↓
+      COMBINED FEATURE VECTOR
+                ↓
+        MACHINE LEARNING
+                ↓
+       Classification/
+       Prediction
+Shape    → [2.5, 0.91, 0.76]
+Color    → [120, 80, 150]
+Texture  → [0.62, 0.81, 0.43]
+
+                 ↓
+           FEATURE FUSION
+                 ↓
+
+[2.5, 0.91, 0.76, 120, 80, 150, 0.62, 0.81, 0.43]
+
+
+Feature extraction
+IMAGE
+ ↓
+Extract shape
+ ↓
+Extract color
+ ↓
+Extract texture
+
+You're creating features.
+
+Feature fusion
+Shape features
+      +
+Color features
+      +
+Texture features
+      ↓
+Combined feature vector
+
+You're combining features.
+
+
+then ML
+Feature Vector                     Label
+
+[2.5,.91,.76,120,80,150,...]   → Car
+[1.2,.76,.50,110,90,140,...]   → Bike
+[2.8,.94,.80,100,60,130,...]   → Truck
+                         Feature--Class.
+                                             COMBINED
+                 FEATURE VECTOR
+                       ↓
+              ┌────────┼────────┐
+              ↓        ↓        ↓
+             KNN      SVM    Random Forest
+              └────────┼────────┘
+                       ↓
+                  PREDICTION
+                       ↓
+                     CAR

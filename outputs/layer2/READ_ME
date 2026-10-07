@@ -1,0 +1,243 @@
+                         🔵 LAYER 2
+                IMAGE ENHANCEMENT & FILTERING
+                              │
+       ┌──────────────────────┼──────────────────────┐
+       │                      │                      │
+       ▼                      ▼                      ▼
+  SPATIAL DOMAIN        FREQUENCY DOMAIN       EDGE DETECTION
+       │                      │                      │
+       │                      ▼                      │
+       │                  DFT / DCT               Sobel
+       │                      │                  Laplacian
+       │                  FFT = fast DFT          Canny
+       │                      │
+       │                  FFT Shift
+       │                      │
+       │             Center = Low Frequency
+       │             Away = High Frequency
+       │                      │
+       │              ┌───────┴───────┐
+       │              ▼               ▼
+       │         LOW-PASS          HIGH-PASS
+       │              │               │
+       │           SMOOTHING       SHARPENING
+       │
+       ├──────────────┬────────────────┐
+       ▼              ▼                ▼
+   SMOOTHING      SHARPENING      ENHANCEMENT
+       │              │                │
+       │              │                ├─ Contrast
+       │              │                ├─ Histogram
+       │              │                └─ CLAHE
+       │              │
+       ▼              ▼
+   LINEAR          EDGE-BASED
+   FILTERS         ENHANCEMENT
+       │              │
+   ├─ Mean         ├─ Laplacian
+   ├─ Gaussian     ├─ High-pass
+   └─ Weighted     ├─ Unsharp Mask
+                   └─ High-boost
+       │
+       ▼
+   NON-LINEAR
+   FILTERS
+       │
+   ├─ Median
+   ├─ Min
+   ├─ Max
+   └─ Bilateral*
+Remove unwanted high-frequency noise while preserving useful structures such as vehicle boundaries and plate characters.
+Diffrenec between Convolution[kernel flip horizontally and  vertically  then simply calculated] and Correlation[kernel simply calculate]
+Linear Filter: A linear filter calculates the output using a weighted combination of neighboring pixels.
+                   SHARPENING
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+     LAPLACIAN       HIGH-PASS    UNSHARP MASK
+        │              │              │
+        │              │              ▼
+        │              │         Original - Blur
+        │              │              │
+        │              │              ▼
+        │              │          Mask
+        │              │              │
+        │              │              ▼
+        │              │       Original + Mask
+        │              │
+        │              └── High-boost
+        │
+        ▼
+   Edge enhancement
+
+   | Filter                          | How it works                                                       | Calculation                       | Typical kernel / parameter             | Implementation                  | Use case                  | INTELLIVISION use             |
+| ------------------------------- | ------------------------------------------------------------------ | --------------------------------- | -------------------------------------- | ------------------------------- | ------------------------- | ----------------------------- |
+| **Mean / Box**                  | Takes average of neighboring pixels                                | `Output = Σ pixels / N`           | 3×3: `1/9 × [[1,1,1],[1,1,1],[1,1,1]]` | `cv2.blur(img,(3,3))`           | Basic noise reduction     | Baseline smoothing experiment |
+| **Weighted Mean**               | Gives different importance to pixels                               | `Output = Σ(wᵢxᵢ) / Σwᵢ`          | Center gets larger weight              | `cv2.filter2D()`                | More controlled smoothing | Compare against mean          |
+| **Gaussian** ⭐                  | Gives higher weight to nearby pixels and lower weight farther away | Gaussian weighted sum             | `(5,5), σ`                             | `cv2.GaussianBlur(img,(5,5),0)` | General noise reduction   | ⭐ Before Canny                |
+| **Gaussian with larger kernel** | Same Gaussian principle over a larger neighborhood                 | Weighted average over more pixels | `(7,7)`, `(9,9)` etc.                  | `cv2.GaussianBlur()`            | Stronger smoothing        | Very noisy frames             |
+
+
+| Filter          | Type                         | How it works                        | Calculation                       | Implementation                              | Best use                             | INTELLIVISION use              |
+| --------------- | ---------------------------- | ----------------------------------- | --------------------------------- | ------------------------------------------- | ------------------------------------ | ------------------------------ |
+| **Median** ⭐    | Non-linear                   | Sort neighborhood and choose middle | `Output = median(values)`         | `cv2.medianBlur(img,5)`                     | Salt-and-pepper noise                | ⭐ Noisy CCTV                   |
+| **Min**         | Non-linear                   | Select smallest value               | `Output = min(values)`            | `cv2.erode()` conceptually / custom filter  | Suppress bright isolated pixels      | Special image-processing cases |
+| **Max**         | Non-linear                   | Select largest value                | `Output = max(values)`            | `cv2.dilate()` conceptually / custom filter | Suppress dark isolated pixels        | Special image-processing cases |
+| **Bilateral** ⭐ | Non-linear / edge-preserving | Uses spatial + intensity similarity | Weighted average with two weights | `cv2.bilateralFilter()`                     | Noise removal while preserving edges | ⭐ Vehicle/plate regions        |
+
+
+| Method                       | Type              | How it works                                             | Calculation                                   | Implementation                            | Use case                    | INTELLIVISION            |
+| ---------------------------- | ----------------- | -------------------------------------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------- | ------------------------ |
+| **Laplacian sharpening** ⭐   | Derivative-based  | Finds rapid intensity changes and enhances them          | 2nd derivative                                | `cv2.Laplacian()` + combine with original | Edge/detail enhancement     | Vehicle/plate boundaries |
+| **Unsharp Masking** ⭐        | Mask-based        | Subtract blurred image from original and add detail back | `Mask = I - Blur(I)`; `Sharp = I + kMask`     | `cv2.addWeighted()`                       | Controlled sharpening       | ⭐ License plate/detail   |
+| **High-boost**               | Strong sharpening | Amplifies original/detail difference                     | `g = A·I - Blur(I)`                           | `addWeighted()` / custom                  | Stronger detail enhancement | Very soft ROI            |
+| **High-pass spatial kernel** | Kernel-based      | Suppresses smooth areas and emphasizes changes           | Convolution/correlation with high-pass kernel | `cv2.filter2D()`                          | Detail/edge enhancement     | Edge/detail experiment   |
+
+unsharping Mask                 ORIGINAL
+                    │
+          ┌─────────┴─────────┐
+          │                   │
+          ▼                   ▼
+       Original              Blur
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+              Difference
+                    │
+                    ▼
+                   MASK
+                    │
+                    ▼
+          Original + k × Mask
+                    │
+                    ▼
+                SHARPENED
+
+| Filter           | Domain    | What it keeps                          | What it removes      | Result                | Use                       |
+| ---------------- | --------- | -------------------------------------- | -------------------- | --------------------- | ------------------------- |
+| **Low-pass**     | Frequency | Low frequencies                        | High frequencies     | Smoothing             | Noise reduction           |
+| **High-pass**    | Frequency | High frequencies                       | Low frequencies      | Sharpening/detail     | Edge enhancement          |
+| **Band-pass**    | Frequency | Selected frequency range               | Others               | Selected details      | Specialized analysis      |
+| **Notch filter** | Frequency | Everything except selected frequencies | Specific frequencies | Remove periodic noise | Specialized noise removal |
+
+| Method                 | Derivative  | How it works                        | Main calculation       | Implementation       | Use case              | INTELLIVISION           |
+| ---------------------- | ----------- | ----------------------------------- | ---------------------- | -------------------- | --------------------- | ----------------------- |
+| **Sobel X**            | First       | Finds horizontal intensity gradient | \(G_x\)                | `cv2.Sobel(...,1,0)` | Vertical edges        | Vehicle boundaries      |
+| **Sobel Y**            | First       | Finds vertical intensity gradient   | \(G_y\)                | `cv2.Sobel(...,0,1)` | Horizontal edges      | Road markings           |
+| **Gradient magnitude** | First       | Combines X/Y gradients              | \(\sqrt{G_x^2+G_y^2}\) | NumPy/OpenCV         | Overall edge strength | Structural edges        |
+| **Laplacian**          | Second      | Detects rapid intensity changes     | \(\nabla^2f\)          | `cv2.Laplacian()`    | Edge/detail           | Plate/object boundaries |
+| **Canny** ⭐            | Multi-stage | Gradient + suppression + thresholds | Multiple stages        | `cv2.Canny()`        | Clean edge map        | ⭐ Traffic boundaries    |
+
+| Main purpose   | Subcategory     | Filter        | Calculation                 | Domain    | Result                   | Project use           |
+| -------------- | --------------- | ------------- | --------------------------- | --------- | ------------------------ | --------------------- |
+| **Smoothing**  | Linear          | Mean          | Average                     | Spatial   | Blur/noise reduction     | Baseline              |
+|                | Linear          | Weighted Mean | Weighted average            | Spatial   | Controlled smoothing     | Comparison            |
+|                | Linear          | Gaussian      | Gaussian weighted average   | Spatial   | Smooth                   | ⭐ Before Canny        |
+| **Smoothing**  | Non-linear      | Median        | Middle value                | Spatial   | Removes impulse noise    | ⭐ CCTV                |
+|                | Non-linear      | Min           | Minimum                     | Spatial   | Suppresses bright points | Special               |
+|                | Non-linear      | Max           | Maximum                     | Spatial   | Suppresses dark points   | Special               |
+|                | Edge-preserving | Bilateral     | Spatial + intensity weights | Spatial   | Smooth + preserve edges  | ⭐ Traffic/plates      |
+| **Sharpening** | Derivative      | Laplacian     | Second derivative           | Spatial   | Edge enhancement         | Vehicle/plate         |
+|                | Mask            | Unsharp       | Original − blur             | Spatial   | Controlled sharpening    | ⭐ OCR                 |
+|                | Strong mask     | High-boost    | A×original − blur           | Spatial   | Strong sharpening        | Detail enhancement    |
+| **Frequency**  | Smoothing       | Low-pass      | Keep low frequencies        | Frequency | Smooth                   | Frequency experiment  |
+|                | Sharpening      | High-pass     | Keep high frequencies       | Frequency | Detail/edges             | Sharpening experiment |
+|                | Specialized     | Band-pass     | Keep selected frequencies   | Frequency | Selected details         | Advanced              |
+| **Edges**      | Gradient        | Sobel         | First derivative            | Spatial   | Gradient/edges           | Road/vehicle          |
+|                | Derivative      | Laplacian     | Second derivative           | Spatial   | Edges                    | Object boundaries     |
+|                | Multi-stage     | Canny         | Gradient + thresholds       | Spatial   | Clean edge map           | ⭐ Traffic edges       |
+
+
+
+| Main purpose   | Subcategory     | Filter        | Calculation                 | Domain    | Result                   | Project use           |
+| -------------- | --------------- | ------------- | --------------------------- | --------- | ------------------------ | --------------------- |
+| **Smoothing**  | Linear          | Mean          | Average                     | Spatial   | Blur/noise reduction     | Baseline              |
+|                | Linear          | Weighted Mean | Weighted average            | Spatial   | Controlled smoothing     | Comparison            |
+|                | Linear          | Gaussian      | Gaussian weighted average   | Spatial   | Smooth                   | ⭐ Before Canny        |
+| **Smoothing**  | Non-linear      | Median        | Middle value                | Spatial   | Removes impulse noise    | ⭐ CCTV                |
+|                | Non-linear      | Min           | Minimum                     | Spatial   | Suppresses bright points | Special               |
+|                | Non-linear      | Max           | Maximum                     | Spatial   | Suppresses dark points   | Special               |
+|                | Edge-preserving | Bilateral     | Spatial + intensity weights | Spatial   | Smooth + preserve edges  | ⭐ Traffic/plates      |
+| **Sharpening** | Derivative      | Laplacian     | Second derivative           | Spatial   | Edge enhancement         | Vehicle/plate         |
+|                | Mask            | Unsharp       | Original − blur             | Spatial   | Controlled sharpening    | ⭐ OCR                 |
+|                | Strong mask     | High-boost    | A×original − blur           | Spatial   | Strong sharpening        | Detail enhancement    |
+| **Frequency**  | Smoothing       | Low-pass      | Keep low frequencies        | Frequency | Smooth                   | Frequency experiment  |
+|                | Sharpening      | High-pass     | Keep high frequencies       | Frequency | Detail/edges             | Sharpening experiment |
+|                | Specialized     | Band-pass     | Keep selected frequencies   | Frequency | Selected details         | Advanced              |
+| **Edges**      | Gradient        | Sobel         | First derivative            | Spatial   | Gradient/edges           | Road/vehicle          |
+|                | Derivative      | Laplacian     | Second derivative           | Spatial   | Edges                    | Object boundaries     |
+|                | Multi-stage     | Canny         | Gradient + thresholds       | Spatial   | Clean edge map           | ⭐ Traffic edges       |
+
+
+
+
+
+
+
+
+#Layer2: Image Processing and Enhancement
+# Layer2 apply: classical image processing techniques
+# Pipeline: Filtering --- Enhancement --- Edges -- Processed Images --- Useful Images
+# It solve: Noise: random unwanted pixel,Low Contrast: Dark Vehicle blends into dark roads, Blur: Vehicle boundaries are not clear, Uneven lighting: Some area are dark or too bright.
+# -- Filtering: Modify a pixel using info from nearby pixels. Pixel--Neighbour pixels--Kernel--Convolution--New Pixel Value
+# --type Mean Filter: It avg neighbouring pixels-- smooth or reduce small variations and noise. Study: Neighouring/averaging/kernel/smoothing/effect of inc kernel size
+# Neighbourhood means group of pixels around the current pixel to calc new Value
+# Kernel means small matrix/ window that moves across the image. 
+# For Mean filter: Every pixel has equal weight so the new center pixel is all its neighbour avg
+# Smoothing: means reducing sudden change/ noise in the image which leads to smooth or blur images
+# What ahppen when Kernel Size Change: as kernel size chnage we average a larger neighbourhood
+# Small kernel → less smoothing → more details
+# Large kernel → more smoothing → more blur 
+
+# Gaussian Filter: a smoothing/blur filter and it give more importance to pixel near the center. Gaussian filter give highest weight to the center and lower to nearby weights
+# It is better that mean filter as it produces smoother and more natural-looking blur because nearby pixels influence the center more than distant pixels.
+# It is used for edge detection
+# Larger Gaussian kernel → stronger smoothing → more blur → more fine details removed.
+# Mean filter: every neighboring pixel has equal importance.
+# Gaussian filter: nearby pixels have more importance than distant pixels.
+# Increasing filter size: increases the neighborhood, causing stronger smoothing and more blur.
+# Mean and Gaussian may blur the edge
+# Median Filter: Takes the neighbourhood -- sorts the pixel values -- picks the middle value. The median filter removes them while preserving edges better
+# Bilateral Filter: Remove noise while preserving edges. Pixels should influence each other based on both distance AND similarity in intensity/color.Pixel near-- more influence/ far-- less influence.Pixel with similar intensity -- more influence/very different pixel -- less influence.
+# Sharpening: enhances details -- clearer/sharper image -- center pixel gets large +ve weight while neighbouring pixels get negative.
+# | Filter         | Main purpose                  | Basic idea                               |
+# | -------------- | ----------------------------- | ---------------------------------------- |
+# | **Mean**       | Smoothing                     | Average neighboring pixels               |
+# | **Gaussian**   | Smoothing                     | Weighted average                         |
+# | **Median**     | Noise removal                 | Pick middle value                        |
+# | **Bilateral**  | Smoothing + edge preservation | Consider distance + intensity similarity |
+# | **Sharpening** | Increase details/edges        | Increase intensity differences           |
+
+# Histogram:
+# It helps to tell how many pixels have each intensity value
+# Pixel Intensity: Brightness value of pixel.Frequency: How many pixels have a particular intensity.Distribution: where the pixels are concentrated across the intensity range. 
+# 0        128        255
+# |---------|----------| Most pixels are on the left → image is mostly dark.
+# ████████
+# Contrast: spread of intesity values
+# Histogram Equalization: chnage intesity redistribution.Globel Level
+# CLAHE: Instead of treating the entire image as one region, it works on small local regions and limits excessive contrast enhancement.Local Level
+# Contrast Stretching: Expand a narrow intensity range to a wider useful range. This can make a low-contrast image use more of the available intensity range. Original intensity:50 ───────────── 180After stretching:0 ───────────────── 255
+
+# EDGE DETECTION:
+# WHERE IMAGE CHANGE RAPIDLY? As the boundary between two object create intense strong intensity chnage.
+# Gradient:Measures how quickly intensity changes and in what direction.
+# Sobel X:Sobel X detects vertical edges.Detects intensity changes primarily in the horizontal direction of the gradient calculation.
+# Sobel Y:Sobel X detects Horizontal edges. Detects intensity changes primarily in the vertical direction of the gradient calculation.
+# . Combining Sobel X and Y: G=Gx2​+Gy2​
+# Laplacian looks for places where the intensity changes rapidly or where the rate of change itself changes
+# Canny
+# Image
+#   ↓
+# 1. Noise reduction: Use Gaussian filter
+#   ↓
+# 2. Gradient calculation: Finds where intensity changes strongly.Sobel X and Sobel Y.A larger gradient means a stronger possible edge.
+#   ↓
+# 3. Non-maximum suppression: Make thick edges thin so to keep the strongest points. 
+#   ↓
+# 4. Double threshold: Which detected edges are strong enough to keep?. It has two threshold. Gradient > High threshold → Strong edge → KEEP--Low < Gradient < High       → Weak edge → MAYBE --Gradient < Low threshold   → Non-edge → REMOVE
+#   ↓
+# 5. Edge tracking by hysteresis. Weak edges connected to strong edges are kept.Weak edges not connected to strong edges are removed as likely noise.
+#   ↓
+# Final edges
+
